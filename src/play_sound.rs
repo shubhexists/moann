@@ -1,8 +1,8 @@
 use std::{
-    collections::HashMap, ffi::OsStr, fs::{read_dir, DirEntry, File}, io::BufReader, path::PathBuf, sync::{Arc, RwLock, RwLockWriteGuard}, thread
+    collections::HashMap, ffi::OsStr, fs::{read_dir, DirEntry, File}, io::BufReader, path::PathBuf, sync::{Arc, RwLock, RwLockWriteGuard}, thread, time::Duration
 };
 use rdev::{listen, Event, EventType};
-use rodio::{buffer::SamplesBuffer, Decoder, OutputStreamHandle, Source};
+use rodio::{buffer::SamplesBuffer, Decoder, OutputStreamHandle, Sink, Source};
 use serde::Serialize;
 use crate::{config::{Defines, SoundPack}, constants::{FILE_PATH, KEY_MAP}, errors::PulseErrors, sounds::SoundFiles, utils::{is_audio_file, save_sound_buffers_to_json}};
 
@@ -59,8 +59,8 @@ pub fn listen_and_play(debug: bool, sound: &SoundFiles, stream_handle: OutputStr
     }
 
     if debug {
-        let output_path = FILE_PATH.join("sound_buffers.json");
-        let output_path_str = output_path.to_str().expect("Invalid UTF-8 in output path");
+        let output_path: PathBuf = FILE_PATH.join("sound_buffers.json");
+        let output_path_str: &str = output_path.to_str().expect("Invalid UTF-8 in output path");
 
         save_sound_buffers_to_json(
 &*sound_buffers.read().unwrap(),
@@ -118,10 +118,37 @@ pub fn listen_and_play(debug: bool, sound: &SoundFiles, stream_handle: OutputStr
         }
         _ => {
             if debug {
-                println!("Key define type: default");
+                println!("Key define type: single");
             }
-            unimplemented!(".ogg files are still unimplemented");
-        }
+
+            listen(move |event: Event| {
+                if let EventType::KeyPress(key) = event.event_type {
+                    let code: Option<&u64> = KEY_MAP.get(&key);
+                    if let Some(code) = code {
+                        if let Some(Defines::U64HashMap(map)) = &config.defines {
+                            if let Some(sound_segment) = map.get(&code.to_string()) {
+                                if let Some(sound_data) = sound_buffers.read().unwrap().get(&config.sound) {
+                                    let sound_source: SamplesBuffer<f32> = SamplesBuffer::new(
+                                        sound_data.channels,
+                                        sound_data.sample_rate,
+                                        sound_data.samples.clone(),
+                                    );
+                                    let start_ms: f32 = sound_segment[0] as f32 / 1000.0;
+                                    let duration: Duration = Duration::from_millis(sound_segment[1] as u64);
+                                    let stream_handle_clone: OutputStreamHandle = stream_handle.clone();
+                                    thread::spawn(move || {
+                                        let sink = Sink::try_new(&stream_handle_clone).unwrap();
+                                        sink.try_seek(Duration::from_secs_f32(start_ms)).unwrap();
+                                        sink.append(sound_source.convert_samples::<f32>());
+                                        std::thread::sleep(duration);
+                                        sink.stop();
+                                    });
+                                }
+                            }
+                        }
+                    }}
+                }).expect("Failed to start global key listener");
+            }
     }    
 
     std::thread::park();

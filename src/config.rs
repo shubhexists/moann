@@ -12,13 +12,13 @@ pub enum Defines {
 #[derive(Deserialize, Debug)]
 pub struct SoundPack {
     pub key_define_type: String,
+    pub sound: String,
     pub defines: Option<Defines>,
 }
 
 impl SoundPack {
     pub fn parse_config_file(sound_type: &SoundFiles, debug: bool) -> Result<Self, Box<dyn Error>> {
         let sound_dir: PathBuf = FILE_PATH.join(SoundFiles::get_extract_dir(sound_type)); 
-        
         if debug {
             println!("Reading config in: {:?}", sound_dir);
         }
