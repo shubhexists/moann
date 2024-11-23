@@ -6,10 +6,10 @@ pub enum PulseErrors {
     UnableToPlayFile { err: rodio::PlayError },
     UnableToDownloadFile { err: Box<dyn Error> },
     UnwantedSelectionIndex { index: usize },
-    UnzipError {err: io::Error},
-    RemoveFileError {err: io::Error},
-    JSONReadError { err: io::Error},
-    JSONParseError { err: serde_json::Error}
+    UnzipError { err: io::Error },
+    RemoveFileError { err: io::Error },
+    JSONReadError { err: io::Error },
+    JSONParseError { err: serde_json::Error },
 }
 
 impl Display for PulseErrors {

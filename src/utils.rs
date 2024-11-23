@@ -1,8 +1,6 @@
 use crate::errors::PulseErrors;
 use crate::play_sound::SoundData;
 use indicatif::ProgressBar;
-use zip::read::ZipFile;
-use zip::ZipArchive;
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::{
@@ -11,6 +9,8 @@ use std::{
     io,
     path::PathBuf,
 };
+use zip::read::ZipFile;
+use zip::ZipArchive;
 
 pub fn create_pulse_directory() -> Result<(), Box<dyn Error>> {
     let home_dir: PathBuf = dirs::home_dir().expect("Unable to get home directory");

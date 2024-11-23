@@ -1,7 +1,7 @@
-use std::{collections::HashMap, path::Path};
-
+use dirs::home_dir;
 use lazy_static::lazy_static;
 use rdev::Key;
+use std::{collections::HashMap, path::PathBuf};
 
 lazy_static! {
     pub static ref KEY_MAP: HashMap<Key, u64> = {
@@ -96,7 +96,6 @@ lazy_static! {
             (3675, Key::MetaLeft),
             (3676, Key::MetaRight),
             (3677, Key::Function),
-           
             (69, Key::NumLock),
             (3637, Key::KpDivide),
             (55, Key::KpMultiply),
@@ -105,7 +104,6 @@ lazy_static! {
             (78, Key::KpPlus),
             (3612, Key::KpReturn),
             (83, Key::KpDelete),
-           
             (79, Key::Kp1),
             (80, Key::Kp2),
             (81, Key::Kp3),
@@ -127,5 +125,10 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref FILE_PATH: &'static Path = Path::new("/home/jerry/.pulse");
+    pub static ref FILE_PATH: PathBuf = {
+        let home_dir = home_dir().expect("Failed to retrieve the user's home directory");
+        let pulse_path = home_dir.join(".pulse");
+
+        pulse_path
+    };
 }

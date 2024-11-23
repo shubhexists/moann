@@ -1,7 +1,14 @@
 [package]
-name = "sound"
+name = "moann"
+description = "Amazing blazingly fast multithreaded alternative to mechvibes"
 version = "0.1.0"
 edition = "2021"
+author = "Shubham singh	<github: github.com/shubhexists>"
+license-file = "LICENSE"
+repository = "https://github.com/shubhexists/moann"
+readme = "README.md"
+categories = ["cli", "Command line utilities"]
+keywords = ["moann", "mechvibes", "keypress", "sounds"]
 
 [dependencies]
 rodio = "0.20.1"

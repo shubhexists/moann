@@ -1,9 +1,9 @@
 mod commands;
-mod sounds;
-mod errors;
 mod config;
-mod play_sound;
 mod constants;
+mod errors;
+mod play_sound;
+mod sounds;
 #[allow(deprecated)]
 mod utils;
 use clap::{Parser, Subcommand};
@@ -13,7 +13,7 @@ use rodio::OutputStream;
 use utils::create_pulse_directory;
 
 #[derive(Parser)]
-#[clap(name = "Pulse", version = "0.0.1", author = "Shubham Singh")]
+#[clap(name = "Moann", version = "0.1.0", author = "Shubham Singh")]
 struct CLI {
     #[command(subcommand)]
     command: Commands,
@@ -26,7 +26,7 @@ enum Commands {
         /// debug flag, to print debug information (-d, --debug)
         #[clap(short, long)]
         debug: bool,
-    }
+    },
 }
 
 fn main() {

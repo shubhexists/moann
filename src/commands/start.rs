@@ -1,8 +1,15 @@
-use std::{error::Error, fs, io};
-use crate::{config::SoundPack, constants::FILE_PATH, errors::PulseErrors, play_sound::listen_and_play, sounds::SoundFiles, utils::{download_file, unzip_sounds}};
+use crate::{
+    config::SoundPack,
+    constants::FILE_PATH,
+    errors::PulseErrors,
+    play_sound::listen_and_play,
+    sounds::SoundFiles,
+    utils::{download_file, unzip_sounds},
+};
 use dialoguer::{theme::ColorfulTheme, Select};
-use std::path::PathBuf;
 use rodio::OutputStreamHandle;
+use std::path::PathBuf;
+use std::{error::Error, fs, io};
 
 pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<dyn Error>> {
     let selection_array: Vec<String> = vec![
@@ -21,7 +28,8 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
     match &selection {
         // Apex Pro
         0 => {
-            let dir_path: PathBuf = FILE_PATH.join(SoundFiles::get_extract_dir(&SoundFiles::ApexPro));
+            let dir_path: PathBuf =
+                FILE_PATH.join(SoundFiles::get_extract_dir(&SoundFiles::ApexPro));
             if dir_path.exists() {
                 if debug {
                     println!("Directory already exists: {:?}", dir_path);
@@ -33,16 +41,22 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
                     &file,
                 )
                 .map_err(|err: Box<dyn Error>| PulseErrors::UnableToDownloadFile { err })?;
-            
-                let zip_path: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::ApexPro));
-                unzip_sounds(&zip_path, &dir_path).map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
-                fs::remove_file(zip_path).map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
-            
+
+                let zip_path: PathBuf =
+                    FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::ApexPro));
+                unzip_sounds(&zip_path, &dir_path)
+                    .map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
+                fs::remove_file(zip_path)
+                    .map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
+
                 if debug {
-                    println!("Successfully downloaded and extracted files to {:?}", dir_path);
+                    println!(
+                        "Successfully downloaded and extracted files to {:?}",
+                        dir_path
+                    );
                 }
             }
-            
+
             let config: SoundPack = SoundPack::parse_config_file(&SoundFiles::ApexPro, debug)?;
             if debug {
                 println!("Config generated: {:?}", config);
@@ -53,7 +67,8 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
 
         // EG Orea
         1 => {
-            let dir_path: PathBuf = FILE_PATH.join(SoundFiles::get_extract_dir(&SoundFiles::EgOrea));
+            let dir_path: PathBuf =
+                FILE_PATH.join(SoundFiles::get_extract_dir(&SoundFiles::EgOrea));
 
             if dir_path.exists() {
                 if debug {
@@ -67,17 +82,22 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
                 )
                 .map_err(|err: Box<dyn Error>| PulseErrors::UnableToDownloadFile { err })?;
 
-                let zip_path: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::EgOrea));
+                let zip_path: PathBuf =
+                    FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::EgOrea));
                 let output_dir: PathBuf = PathBuf::from(FILE_PATH.to_str().unwrap());
-                unzip_sounds(&zip_path, &output_dir).map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
-                fs::remove_file(zip_path).map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
+                unzip_sounds(&zip_path, &output_dir)
+                    .map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
+                fs::remove_file(zip_path)
+                    .map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
 
                 if debug {
-                    println!("Successfully downloaded and extracted files to {:?}", dir_path);
+                    println!(
+                        "Successfully downloaded and extracted files to {:?}",
+                        dir_path
+                    );
                 }
             }
 
-           
             let config: SoundPack = SoundPack::parse_config_file(&SoundFiles::EgOrea, debug)?;
             if debug {
                 println!("Config generated: {:?}", config);
@@ -87,7 +107,8 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
 
         // Fall Out
         2 => {
-            let dir_path: PathBuf = FILE_PATH.join(SoundFiles::get_extract_dir(&SoundFiles::FallOut));
+            let dir_path: PathBuf =
+                FILE_PATH.join(SoundFiles::get_extract_dir(&SoundFiles::FallOut));
 
             if dir_path.exists() {
                 if debug {
@@ -101,16 +122,22 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
                 )
                 .map_err(|err: Box<dyn Error>| PulseErrors::UnableToDownloadFile { err })?;
 
-                let zip_path: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::FallOut));
+                let zip_path: PathBuf =
+                    FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::FallOut));
                 let output_dir: PathBuf = PathBuf::from(FILE_PATH.to_str().unwrap());
-                unzip_sounds(&zip_path, &output_dir).map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
-                fs::remove_file(zip_path).map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
+                unzip_sounds(&zip_path, &output_dir)
+                    .map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
+                fs::remove_file(zip_path)
+                    .map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
 
                 if debug {
-                    println!("Successfully downloaded and extracted files to {:?}", dir_path);
+                    println!(
+                        "Successfully downloaded and extracted files to {:?}",
+                        dir_path
+                    );
                 }
             }
-           
+
             let config: SoundPack = SoundPack::parse_config_file(&SoundFiles::FallOut, debug)?;
             if debug {
                 println!("Config generated: {:?}", config);
