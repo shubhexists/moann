@@ -7,7 +7,7 @@ author = "Shubham singh	<github: github.com/shubhexists>"
 license-file = "LICENSE"
 repository = "https://github.com/shubhexists/moann"
 readme = "README.md"
-categories = ["cli", "Command line utilities"]
+categories = ["cli"]
 keywords = ["moann", "mechvibes", "keypress", "sounds"]
 
 [dependencies]
