@@ -1,14 +1,14 @@
 use crate::errors::PulseErrors;
+use crate::play_sound::SoundData;
 use indicatif::ProgressBar;
-use rdev::{listen, Event, EventType};
-use rodio::{Decoder, OutputStreamHandle, Source};
 use zip::read::ZipFile;
 use zip::ZipArchive;
+use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::{
     error::Error,
     fs::{self, File},
-    io::{self, BufReader},
+    io,
     path::PathBuf,
 };
 
@@ -22,33 +22,6 @@ pub fn create_pulse_directory() -> Result<(), Box<dyn Error>> {
     File::create(config_file)
         .map_err(|err: io::Error| PulseErrors::CouldNotCreatePulseDirectory { err })?;
     Ok(())
-}
-
-pub fn listen_and_play(debug: bool, path: &str, stream_handle: OutputStreamHandle) {
-    let file: BufReader<File> = BufReader::new(File::open(path).unwrap());
-    let source: Decoder<BufReader<File>> = Decoder::new(file).unwrap();
-    let channels: u16 = source.channels();
-    let sample_rate: u32 = source.sample_rate();
-    let samples: Vec<f32> = source.convert_samples().collect();
-
-    listen(move |event: Event| {
-        if let EventType::KeyPress(key) = event.event_type {
-            match key {
-                _ => {
-                    let samples: Vec<f32> = samples.clone();
-                    let sound_source: rodio::buffer::SamplesBuffer<f32> =
-                        rodio::buffer::SamplesBuffer::new(channels, sample_rate, samples);
-
-                    let _ = stream_handle
-                        .play_raw(sound_source.convert_samples())
-                        .map_err(|e: rodio::PlayError| eprintln!("Playback error: {}", e));
-                }
-            }
-        }
-    })
-    .expect("Failed to start global key listener");
-
-    std::thread::park();
 }
 
 pub fn download_file(url: &str, path: &PathBuf) -> Result<(), Box<dyn Error>> {
@@ -111,3 +84,30 @@ pub fn unzip_sounds(zip_path: &PathBuf, output_dir: &PathBuf) -> io::Result<()> 
 
     Ok(())
 }
+
+pub fn is_audio_file(path: &std::path::Path) -> bool {
+    match path.extension().and_then(|s| s.to_str()) {
+        Some("mp4") | Some("wav") | Some("ogg") => true,
+        _ => false,
+    }
+}
+
+pub fn save_sound_buffers_to_json(
+    sound_buffers: &HashMap<String, SoundData>,
+    output_path: &str,
+    debug: bool,
+) {
+    match serde_json::to_string(&sound_buffers) {
+        Ok(json_string) => {
+            let mut file = File::create(output_path).expect("Failed to create output JSON file");
+            file.write_all(json_string.as_bytes())
+                .expect("Failed to write JSON to file");
+            if debug {
+                println!("Sound buffers written to JSON file at: {}", output_path);
+            }
+        }
+        Err(e) => {
+            eprintln!("Failed to serialize sound buffers: {}", e);
+        }
+    }
+} 

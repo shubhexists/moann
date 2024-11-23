@@ -1575,6 +1575,7 @@ dependencies = [
  "dialoguer",
  "dirs",
  "indicatif",
+ "lazy_static",
  "rdev",
  "rodio",
  "serde",

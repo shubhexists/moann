@@ -7,7 +7,9 @@ pub enum PulseErrors {
     UnableToDownloadFile { err: Box<dyn Error> },
     UnwantedSelectionIndex { index: usize },
     UnzipError {err: io::Error},
-    RemoveFileError {err: io::Error}  
+    RemoveFileError {err: io::Error},
+    JSONReadError { err: io::Error},
+    JSONParseError { err: serde_json::Error}
 }
 
 impl Display for PulseErrors {
@@ -30,6 +32,12 @@ impl Display for PulseErrors {
             }
             PulseErrors::RemoveFileError { err } => {
                 writeln!(f, "Error: Couldn't remove zip file: {}", err)
+            }
+            PulseErrors::JSONReadError { err } => {
+                writeln!(f, "Error: Couldn't read json file: {}", err)
+            }
+            PulseErrors::JSONParseError { err } => {
+                writeln!(f, "Error: Couldn't parse json file: {}", err)
             }
         }
     }

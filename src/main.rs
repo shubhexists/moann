@@ -2,6 +2,8 @@ mod commands;
 mod sounds;
 mod errors;
 mod config;
+mod play_sound;
+mod constants;
 #[allow(deprecated)]
 mod utils;
 use clap::{Parser, Subcommand};
