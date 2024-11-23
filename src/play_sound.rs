@@ -1,15 +1,10 @@
 use std::{
-    collections::HashMap,
-    fs::{read_dir, DirEntry, File},
-    io::BufReader,
-    path::PathBuf,
-    sync::{Arc, RwLock},
-    thread,
+    collections::HashMap, ffi::OsStr, fs::{read_dir, DirEntry, File}, io::BufReader, path::PathBuf, sync::{Arc, RwLock, RwLockWriteGuard}, thread
 };
 use rdev::{listen, Event, EventType};
 use rodio::{buffer::SamplesBuffer, Decoder, OutputStreamHandle, Source};
 use serde::Serialize;
-use crate::{config::{Defines, SoundPack}, constants::{FILE_PATH, KEY_MAP}, sounds::SoundFiles, utils::{is_audio_file, save_sound_buffers_to_json}};
+use crate::{config::{Defines, SoundPack}, constants::{FILE_PATH, KEY_MAP}, errors::PulseErrors, sounds::SoundFiles, utils::{is_audio_file, save_sound_buffers_to_json}};
 
 #[derive(Clone, Debug, Serialize)]
 pub struct SoundData {
@@ -28,19 +23,25 @@ pub fn listen_and_play(debug: bool, sound: &SoundFiles, stream_handle: OutputStr
         let entry: DirEntry = entry.unwrap();
         let path: PathBuf = entry.path();
         if path.is_file() && is_audio_file(&path) {
-            let sound_buffers = Arc::clone(&sound_buffers);
-            let path = path.to_path_buf();
+            let sound_buffers: Arc<RwLock<HashMap<String, SoundData>>> = Arc::clone(&sound_buffers);
+            let path: PathBuf = path.to_path_buf();
 
-            let handle = thread::spawn(move || {
-                let file = BufReader::new(File::open(&path).unwrap());
-                let decoder = Decoder::new(file).unwrap();
-                let channels = decoder.channels();
-                let sample_rate = decoder.sample_rate();
+            let handle: thread::JoinHandle<()> = thread::spawn(move || {
+                let file: BufReader<File> = BufReader::new(File::open(&path).unwrap());
+                let decoder: Decoder<BufReader<File>> = Decoder::new(file).unwrap();
+                let channels: u16 = decoder.channels();
+                let sample_rate: u32 = decoder.sample_rate();
                 let samples: Vec<f32> = decoder.convert_samples().collect();
 
-                let mut sound_buffers = sound_buffers.write().unwrap();
+                let file_name: String = path
+                .file_name()
+                .and_then(|os_str: &OsStr| os_str.to_str())
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| path.to_string_lossy().to_string());
+
+                let mut sound_buffers: RwLockWriteGuard<'_, HashMap<String, SoundData>> = sound_buffers.write().unwrap();
                 sound_buffers.insert(
-                    path.to_string_lossy().to_string(),
+                    file_name,
                     SoundData {
                         samples,
                         channels,
@@ -78,7 +79,7 @@ pub fn listen_and_play(debug: bool, sound: &SoundFiles, stream_handle: OutputStr
                 if let EventType::KeyPress(key) = event.event_type {
                     let code: Option<&u64> = KEY_MAP.get(&key);
                     if let Some(code) = code {
-                        if let Defines::StringHashMap(map) = &config.defines {
+                        if let Some(Defines::StringHashMap(map)) = &config.defines {
                             if let Some(file_name) = map.get(&code.to_string()) {
                                 if let Some(sound_data) = sound_buffers.read().unwrap().get(file_name) {
                                     let sound_source: SamplesBuffer<f32> = SamplesBuffer::new(
@@ -86,10 +87,11 @@ pub fn listen_and_play(debug: bool, sound: &SoundFiles, stream_handle: OutputStr
                                         sound_data.sample_rate,
                                         sound_data.samples.clone(),
                                     );
-    
                                     if let Err(e) = stream_handle
                                         .play_raw(sound_source.convert_samples())
-                                        .map_err(|e| eprintln!("Playback error: {}", e))
+                                        .map_err(|e: rodio::PlayError| {eprintln!("Playback error: {}", e); 
+                                        PulseErrors::UnableToPlayFile { err: e }
+                                    })
                                     {
                                         if debug {
                                             eprintln!(
@@ -105,14 +107,14 @@ pub fn listen_and_play(debug: bool, sound: &SoundFiles, stream_handle: OutputStr
                                 eprintln!("No file name mapped for key code: {}", code);
                             }
                         } else if debug {
-                            eprintln!("Config defines is not a StringHashMap, unexpected type!");
+                            eprintln!("Config defines is either None or not a StringHashMap!");
                         }
                     } else if debug {
                         eprintln!("No mapping found for key: {:?}", key);
                     }
                 }
             })
-            .expect("Failed to start global key listener");
+            .expect("Failed to start global key listener");            
         }
         _ => {
             if debug {
