@@ -19,7 +19,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install ALSA development library
-      run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      run: sudo apt-get update && sudo apt-get install -y libasound2-dev libxi-dev libxtst-dev
 
     - name: Build
       run: cargo build --verbose
