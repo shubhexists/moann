@@ -1,41 +1,39 @@
+mod commands;
+mod sounds;
+mod errors;
+mod config;
+#[allow(deprecated)]
+mod utils;
+use clap::{Parser, Subcommand};
+use commands::start::start;
 use console::Term;
-use rdev::{listen, Event, EventType};
-use rodio::{Decoder, OutputStream, Source};
-use std::fs::File;
-use std::io::BufReader;
+use rodio::OutputStream;
+use utils::create_pulse_directory;
+
+#[derive(Parser)]
+#[clap(name = "Pulse", version = "0.0.1", author = "Shubham Singh")]
+struct CLI {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    #[clap(name = "start")]
+    Start {
+        /// debug flag, to print debug information (-d, --debug)
+        #[clap(short, long)]
+        debug: bool,
+    }
+}
 
 fn main() {
+    tracing_subscriber::fmt::init();
+    let _ = create_pulse_directory();
     let _ = Term::buffered_stdout();
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let file: BufReader<File> = BufReader::new(
-        File::open("/home/jerry/Desktop/projects/sound/mech-keyboard-02-102918.mp3").unwrap(),
-    );
-
-    let source: Decoder<BufReader<File>> = Decoder::new(file).unwrap();
-    let channels: u16 = source.channels();
-    let sample_rate: u32 = source.sample_rate();
-    let samples: Vec<f32> = source.convert_samples().collect();
-
-    listen(move |event: Event| {
-        if let EventType::KeyPress(key) = event.event_type {
-            match key {
-                _ => {
-                    let samples: Vec<f32> = samples.clone();
-                    let sound_source: rodio::buffer::SamplesBuffer<f32> =
-                        rodio::buffer::SamplesBuffer::new(
-                            channels,
-                            sample_rate,
-                            samples,
-                        );
-
-                    let _ = stream_handle
-                        .play_raw(sound_source.convert_samples())
-                        .map_err(|e: rodio::PlayError| eprintln!("Playback error: {}", e));
-                }
-            }
-        }
-    })
-    .expect("Failed to start global key listener");
-
-    std::thread::park();
+    let args: CLI = CLI::parse();
+    let _ = match args.command {
+        Commands::Start { debug } => start(debug, stream_handle),
+    };
 }
