@@ -1580,7 +1580,6 @@ dependencies = [
  "rodio",
  "serde",
  "serde_json",
- "term_ansi",
  "tracing",
  "tracing-subscriber",
  "ureq",
@@ -1694,12 +1693,6 @@ dependencies = [
  "rustix",
  "windows-sys 0.59.0",
 ]
-
-[[package]]
-name = "term_ansi"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30631c685330f69d916beee61e8f599a81a412a876cf018fc1bc777179010f14"
 
 [[package]]
 name = "thiserror"

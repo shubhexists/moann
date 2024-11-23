@@ -29,7 +29,7 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
             } else {
                 let file: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::ApexPro));
                 download_file(
-                    "https://utfs.io/f/a6gjLUEvAeiKzT3eW2mI0VLjinckoMapKPTDs9qeQYlW63F8",
+                    "https://utfs.io/f/a6gjLUEvAeiKWDOt4d6pqQg5G0DIVMYr8sEyXJfZvWjaxmUz",
                     &file,
                 )
                 .map_err(|err: Box<dyn Error>| PulseErrors::UnableToDownloadFile { err })?;
@@ -62,13 +62,14 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
             } else {
                 let file: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::EgOrea));
                 download_file(
-                    "https://utfs.io/f/a6gjLUEvAeiKzT3eW2mI0VLjinckoMapKPTDs9qeQYlW63F8",
+                    "https://utfs.io/f/a6gjLUEvAeiKyfs4UbnDO3HC1SAaFYcT5QKPzN4dxUG9bpEq",
                     &file,
                 )
                 .map_err(|err: Box<dyn Error>| PulseErrors::UnableToDownloadFile { err })?;
 
                 let zip_path: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::EgOrea));
-                unzip_sounds(&zip_path, &dir_path).map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
+                let output_dir: PathBuf = PathBuf::from(FILE_PATH.to_str().unwrap());
+                unzip_sounds(&zip_path, &output_dir).map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
                 fs::remove_file(zip_path).map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
 
                 if debug {
@@ -95,13 +96,14 @@ pub fn start(debug: bool, stream_handle: OutputStreamHandle) -> Result<(), Box<d
             } else {
                 let file: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::FallOut));
                 download_file(
-                    "https://utfs.io/f/a6gjLUEvAeiKzT3eW2mI0VLjinckoMapKPTDs9qeQYlW63F8",
+                    "https://utfs.io/f/a6gjLUEvAeiKiaZz5PCUoHzBesmgDYlfWx4Fa5r37bXCZ6M2",
                     &file,
                 )
                 .map_err(|err: Box<dyn Error>| PulseErrors::UnableToDownloadFile { err })?;
 
                 let zip_path: PathBuf = FILE_PATH.join(SoundFiles::get_zip_path(&SoundFiles::FallOut));
-                unzip_sounds(&zip_path, &dir_path).map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
+                let output_dir: PathBuf = PathBuf::from(FILE_PATH.to_str().unwrap());
+                unzip_sounds(&zip_path, &output_dir).map_err(|err: std::io::Error| PulseErrors::UnzipError { err })?;
                 fs::remove_file(zip_path).map_err(|err: io::Error| PulseErrors::RemoveFileError { err })?;
 
                 if debug {
