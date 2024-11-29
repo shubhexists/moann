@@ -13,7 +13,7 @@ use rodio::OutputStream;
 use utils::create_pulse_directory;
 
 #[derive(Parser)]
-#[clap(name = "Moann", version = "0.1.1", author = "Shubham Singh")]
+#[clap(name = "Moann", version = "0.1.2", author = "Shubham Singh")]
 struct CLI {
     #[command(subcommand)]
     command: Commands,
