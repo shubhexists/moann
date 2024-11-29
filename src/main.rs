@@ -30,12 +30,16 @@ enum Commands {
 }
 
 fn main() {
-    tracing_subscriber::fmt::init();
     let _ = create_pulse_directory();
     let _ = Term::buffered_stdout();
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
     let args: CLI = CLI::parse();
     let _ = match args.command {
-        Commands::Start { debug } => start(debug, stream_handle),
+        Commands::Start { debug } => {
+            if debug {
+                tracing_subscriber::fmt::init();
+            }
+            start(debug, stream_handle)
+        },
     };
 }

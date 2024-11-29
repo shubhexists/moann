@@ -87,7 +87,7 @@ pub fn unzip_sounds(zip_path: &PathBuf, output_dir: &PathBuf) -> io::Result<()> 
 
 pub fn is_audio_file(path: &std::path::Path) -> bool {
     match path.extension().and_then(|s| s.to_str()) {
-        Some("mp4") | Some("wav") | Some("ogg") => true,
+        Some("mp3") | Some("wav") | Some("ogg") => true,
         _ => false,
     }
 }

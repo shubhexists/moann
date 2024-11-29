@@ -37,14 +37,12 @@ pub fn listen_and_play(
     let mut handles: Vec<_> = vec![];
 
     let dir_path: PathBuf = FILE_PATH.join(SoundFiles::get_extract_dir(sound));
-
     for entry in read_dir(dir_path).unwrap() {
         let entry: DirEntry = entry.unwrap();
         let path: PathBuf = entry.path();
         if path.is_file() && is_audio_file(&path) {
             let sound_buffers: Arc<RwLock<HashMap<String, SoundData>>> = Arc::clone(&sound_buffers);
             let path: PathBuf = path.to_path_buf();
-
             let handle: thread::JoinHandle<()> = thread::spawn(move || {
                 let file: BufReader<File> = BufReader::new(File::open(&path).unwrap());
                 let decoder: Decoder<BufReader<File>> = Decoder::new(file).unwrap();
@@ -55,7 +53,7 @@ pub fn listen_and_play(
                 let file_name: String = path
                     .file_name()
                     .and_then(|os_str: &OsStr| os_str.to_str())
-                    .map(|s| s.to_string())
+                    .map(|s: &str| s.to_string())
                     .unwrap_or_else(|| path.to_string_lossy().to_string());
 
                 let mut sound_buffers: RwLockWriteGuard<'_, HashMap<String, SoundData>> =
@@ -77,7 +75,6 @@ pub fn listen_and_play(
     for handle in handles {
         handle.join().unwrap();
     }
-
     if debug {
         let output_path: PathBuf = FILE_PATH.join("sound_buffers.json");
         let output_path_str: &str = output_path.to_str().expect("Invalid UTF-8 in output path");
